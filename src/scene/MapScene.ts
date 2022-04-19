@@ -5,7 +5,7 @@ import { Scene } from "./Scene";
 export class MapScene implements Scene {
     readonly Scene = true;
 
-    private readonly mapPath = 'static/models/Map1.gltf';
+    private readonly mapPath = 'static/gltf/map/map2.gltf';
     private readonly gltfLoader = new GLTFLoader();
     private model: three.Object3D;
 
