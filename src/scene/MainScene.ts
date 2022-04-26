@@ -4,6 +4,23 @@ import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
 import { spine } from '../../spine-threejs/spine-threejs';
 import { Scene, SceneNavigator } from './Scene';
 
+const createDiv = () => document.createElement('div') as HTMLDivElement
+
+const createTextDiv = (text: string) => {
+    const textDiv = createDiv();
+    textDiv.className = 'main-scene-button-text';
+    textDiv.textContent = text;
+    return textDiv;
+};
+
+const createButtonDiv = (...children: Array<HTMLElement>) => {
+    const buttonDiv = createDiv();
+    buttonDiv.className = 'main-scene-button';
+    buttonDiv.style.backgroundColor = `rgba(${60},${179},${113},${0.7})`;
+    children.forEach(child => buttonDiv.appendChild(child));
+    return buttonDiv;
+};
+
 export class MainScene implements Scene {
 
     readonly Scene = true;
@@ -14,9 +31,12 @@ export class MainScene implements Scene {
     private readonly spineLoader = new spine.threejs.AssetManager(this.spinePath);
     private loadState: 'none' | 'started' | 'done' = 'none';
     private gameButton: CSS3DObject;
+    private playerButton: CSS3DObject;
 
     private skeletomMesh: spine.threejs.SkeletonMesh | null = null;
 
+    // TODO: make SceneNavigator static for all scenes
+    // TODO: Consider way if scene should add itself to navigator by itself
     constructor(private readonly navigator: SceneNavigator) {}
 
     load(world: three.Scene): void {
@@ -29,21 +49,22 @@ export class MainScene implements Scene {
             this.spineLoader.loadTextureAtlas(this.atlasName);
             this.loadState = 'started';
 
-            const textDiv = document.createElement('div') as HTMLDivElement;
-            textDiv.className = 'main-scene-button-text';
-            textDiv.textContent = 'Game';
-
-            const buttonDiv = document.createElement('div') as HTMLDivElement;
-            buttonDiv.className = 'main-scene-button';
-            buttonDiv.style.backgroundColor = `rgba(${60},${179},${113},${0.7})`;
-            buttonDiv.onclick = (ev: MouseEvent) => {
+            const startGameButtonDiv = createButtonDiv(createTextDiv('Game'));
+            startGameButtonDiv.onclick = (ev: MouseEvent) => {
+                // TODO: add api to switch scene
                 this.navigator.display("map");
                 this.navigator.close("main");
             }
-            buttonDiv.appendChild(textDiv);
 
-            this.gameButton = new CSS3DObject(buttonDiv);
-            this.gameButton.position.z = -500;
+            this.gameButton = new CSS3DObject(startGameButtonDiv);
+            this.gameButton.position.set(0, 30, -500); // TODO: make location and size adaptive
+            startGameButtonDiv.style.pointerEvents = 'none' // TODO: find better way to disable button or create style for that
+
+            const buttonDiv = createButtonDiv(createTextDiv('Create Player'))
+            buttonDiv.onclick = (ev: MouseEvent) => startGameButtonDiv.style.pointerEvents = 'auto';
+
+            this.playerButton = new CSS3DObject(buttonDiv);
+            this.playerButton.position.set(0, -30, -500);
 
             requestAnimationFrame(loopCb);
         } else if (
@@ -64,13 +85,13 @@ export class MainScene implements Scene {
             );
             this.skeletomMesh.state.setAnimation(0, 'animation', true);
             this.skeletomMesh.position.z = -500;
-            world.add(this.skeletomMesh, this.gameButton);
+            world.add(this.skeletomMesh, this.gameButton, this.playerButton);
         }
     }
 
     clear(world: three.Scene): void {
         if (this.skeletomMesh) {
-            world.remove(this.skeletomMesh, this.gameButton);
+            world.remove(this.skeletomMesh, this.gameButton, this.playerButton);
         }
     }
 
