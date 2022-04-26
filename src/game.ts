@@ -84,6 +84,7 @@ export class Game {
         this.glRenderer.setSize(width, height);
         this.cssRenderer.setSize(width, height);
         this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
     }
 
 }
