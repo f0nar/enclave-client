@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/grnch-net/web-game-client#readme",
   "dependencies": {
+    "lil-gui": "^0.16.1",
     "spine-ts": "^1.0.0",
     "spine-ts-threejs": "^1.1.7",
     "three": "^0.139.0"
