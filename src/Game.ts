@@ -3,6 +3,16 @@ import GUI from 'lil-gui';
 import { View } from './graphics/View';
 import { Canvas } from './graphics/Canvas';
 import { World } from './graphics/World';
+import { ThreeDebuggableGraphic } from './graphics/ThreeDebuggable';
+
+const sphere = new class extends ThreeDebuggableGraphic<three.Mesh> {
+    constructor() {
+        super(
+            new three.Mesh(new three.SphereGeometry(10),new three.MeshBasicMaterial({ color: 0xff0000 })),
+            'Sphere'
+        )
+    }
+}
 
 export
 class Game {
@@ -22,7 +32,9 @@ class Game {
         this.view = new View(this.canvas);
         this.view.getNode().position.set(0, 10, 50);
         this.view.getNode().lookAt(this.world.getNode().position);
-        this.world.add(this.view);
+        this.world.add(this.view, sphere);
+
+        this.world.register(this.gui);
 
         this.mainLoop = this.mainLoop.bind(this);
         this.mainLoop();

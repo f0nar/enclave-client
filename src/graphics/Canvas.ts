@@ -24,7 +24,9 @@ class Canvas {
     protected readonly resizeObserver: ResizeObserver;
     protected readonly resizeListeners = new Set<ICanvasResizeListener>();
 
-    constructor(private canvasParent: HTMLElement = document.body) {
+    constructor(
+        private canvasParent: HTMLElement = document.body,
+    ) {
         this.glRenderer = new three.WebGLRenderer({ alpha: true });
         this.glRenderer.setClearColor(0x000000);
         this.glRenderer.setSize(this.canvasParent.clientWidth, this.canvasParent.clientHeight);

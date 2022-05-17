@@ -1,5 +1,7 @@
+import GUI from 'lil-gui';
 import * as three from 'three';
-import { ThreeDebuggableGraphic, ThreeGraphic } from './ThreeGraphic';
+import { ThreeDebuggableGraphic } from './ThreeDebuggable';
+import { ThreeGraphic } from './ThreeGraphic';
 
 export
 class World
@@ -10,7 +12,7 @@ extends ThreeDebuggableGraphic<three.Scene> {
     protected readonly axesHelper = new three.AxesHelper(1000);
 
     constructor() {
-        super(new three.Scene());
+        super(new three.Scene(), 'World', {});
         this.mainGroup.add(this.axesHelper);
         this.node.add(this.mainGroup);
     }
@@ -36,6 +38,15 @@ extends ThreeDebuggableGraphic<three.Scene> {
     clear(): void {
         this.remove(...Array.from(this.children));
         this.children.clear();
+    }
+
+    register(gui: GUI): void {
+        const folder = this.getFolder(gui, true);
+        this.children.forEach(child => {
+            if (child instanceof ThreeDebuggableGraphic) {
+                child.register(folder);
+            }
+        });
     }
 
 }
