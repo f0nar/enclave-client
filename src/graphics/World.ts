@@ -1,6 +1,6 @@
 import GUI from 'lil-gui';
 import * as three from 'three';
-import { ThreeDebuggableGraphic } from './ThreeDebuggable';
+import { registerThreeObjectDefaul, ThreeDebuggableGraphic } from './ThreeDebuggable';
 import { ThreeGraphic } from './ThreeGraphic';
 
 export
@@ -18,16 +18,24 @@ extends ThreeDebuggableGraphic<three.Scene> {
     }
 
     add(...children: Array<ThreeGraphic>): void {
+        const folders = Array.from(this.foldersMap.values());
         for (const child of children) {
             this.children.add(child);
             this.mainGroup.add(child.getNode());
+            if (child instanceof ThreeDebuggableGraphic) {
+                folders.forEach((folder) => child.register(folder));
+            }
         }
     }
 
     remove(...children: Array<ThreeGraphic>): void {
+        const folders = Array.from(this.foldersMap.values());
         for (const child of children) {
             this.children.delete(child);
             this.mainGroup.remove(child.getNode());
+            if (child instanceof ThreeDebuggableGraphic) {
+                folders.forEach((folder) => child.unregister(folder));
+            }
         }
     }
 

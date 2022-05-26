@@ -16,6 +16,7 @@ implements ICanvasResizeListener {
         protected target = new three.Vector3(),
     ) {
         super(new three.PerspectiveCamera(45, aspect(canvas.getSize()), 0.1, 1000), 'Camera', { });
+        this.node.position.set(-20, 20, -50);
         this.node.lookAt(this.target);
         this.canvas.addListener(this);
     }

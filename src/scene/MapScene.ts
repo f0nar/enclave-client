@@ -1,50 +1,51 @@
+import GUI from "lil-gui";
 import * as three from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { defaultDebugConfings, registerThreeObjectDefaul } from "../graphics/ThreeDebuggable";
 import { Scene } from "./Scene";
 
-export class MapScene implements Scene {
+export
+class MapScene
+extends Scene {
+
     readonly Scene = true;
 
     private readonly mapPath = 'static/gltf/map/map2.gltf';
     private readonly playerPath = 'static/gltf/soldier/soldier.gltf';
     private readonly gltfLoader = new GLTFLoader();
-    private model: three.Object3D;
-    private soldier: three.Object3D;
+    private model: three.Group;
+    // private soldier: three.Object3D;
 
-    load(worldScene: three.Scene): void {
-        if (!this.model) {
-            this.gltfLoader.load(this.mapPath, (mapGltf) => {
-                this.model = mapGltf.scene;
-                this.model.castShadow = true;
-                this.model.position.z = 20;
-                this.model.position.x = -40;
-                this.model.rotateX(Math.PI / 4)
-                this.model.rotateY(Math.PI / 3)
-                // worldScene.add(this.model);
-                this.gltfLoader.load(this.playerPath, soldierGltf => {
-                    this.soldier = soldierGltf.scene;
-                    this.soldier.traverse(obj => {
-                        if ((obj as any).isMesh) obj.castShadow = true;
-                    })
-                    this.soldier.castShadow = true;
-                    this.soldier.position.z = 40;
-                    this.soldier.position.y = -1.5;
-                    worldScene.add(this.soldier);
-                })
+    constructor() {
+        super(new three.Group(), 'Map scene', { });
+    }
+
+    async initialize(): Promise<boolean> {
+        return this.model ?
+            Promise.resolve(true) :
+            new Promise<boolean>((resolve, reject) => {
+                this.gltfLoader.load(
+                    this.mapPath,
+                    (mapGltf: GLTF) => {
+                        this.model = mapGltf.scene;
+                        this.model.castShadow = true;
+                        this.model.traverse(obj => { if ((obj as any).isMesh) obj.castShadow = true; });
+                        this.model.position.set(-30, 0, -30);
+                        this.node.add(this.model);
+                        this.foldersMap.forEach((_, gui) => this.register(gui));
+                        resolve(true);
+                    },
+                    () => { },
+                    (errorEvent) => reject(errorEvent),
+                );
             });
-        } else {
-            worldScene.add(this.model);
-        }
     }
 
-    clear(worldScene: three.Scene): void {
+    register(gui: GUI): void {
+        const folder = this.getFolder(gui, true);
         if (this.model) {
-            worldScene.remove(this.model);
+            registerThreeObjectDefaul(folder, this.model, defaultDebugConfings);
         }
-    }
-
-    update(dt: number): void {
-        
     }
     
 }

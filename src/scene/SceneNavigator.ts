@@ -1,39 +1,58 @@
-import { Scene, SceneNavigator } from "./Scene";
-import * as three from 'three';
+import { World } from '../graphics/World';
+import { Scene } from "./Scene";
 
-export class SimpleSceneNavigator implements SceneNavigator {
+export
+interface ISceneLoadingBroadcaster {
+
+    start(): void;
+
+    finish(): void;
+
+}
+
+export
+class SimpleSceneNavigator {
 
     readonly SceneNavigator = true;
 
-    private readonly activeScenes = new Set<Scene>();
-    private readonly scenePathes = new Map<string, Set<Scene>>();
+    private active: Scene | undefined;
+    private readonly scenes = new Map<string, Scene>();
 
-    constructor(private readonly world: three.Scene) {}
+    constructor(
+        private readonly world: World,
+        private readonly brodcaster: ISceneLoadingBroadcaster,
+        ...scenes: Array<[string, Scene]>
+    ) {
+        scenes.forEach(([path, scene]) => this.addScene(path, scene));
+    }
 
-    addScenePath(path: string, scene: Scene, ...restScenes: Scene[]) {
-        const setToFill = this.scenePathes.get(path) || new Set<Scene>();
-        [scene, ...restScenes].forEach(sceneToAdd => setToFill.add(sceneToAdd));
-        if (!this.scenePathes.has(path)) {
-            this.scenePathes.set(path, setToFill);
+    addScene(path: string, scene: Scene) {
+        this.scenes.set(path, scene);
+    }
+
+    async display(path: string): Promise<void> {
+        this.brodcaster.start();
+
+        if (this.active) {
+            await this.active.destroy();
+            this.world.remove(this.active);
+            this.active = undefined;
         }
+
+        const sceneToLoad = this.scenes.get(path);
+        if (sceneToLoad) {
+            this.world.add(sceneToLoad);
+            await sceneToLoad.initialize();
+            this.active = sceneToLoad;
+        }
+
+        this.brodcaster.finish();
+
+        return Promise.resolve();
     }
 
-    display(path: string): void {
-        this.scenePathes.get(path)?.forEach((scene) => {
-            scene.load(this.world);
-            this.activeScenes.add(scene);
-        });
-    }
-
-    close(path: string): void {
-        this.scenePathes.get(path)?.forEach((scene) => {
-            scene.clear(this.world);
-            this.activeScenes.delete(scene);
-        });
-    }
-
-    getActive(): Array<Scene> {
-        return Array.from(this.activeScenes);
+    getActive() {
+        return this.active;
     }
     
 }

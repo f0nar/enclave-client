@@ -1,24 +1,17 @@
 import * as three from 'three';
+import { ThreeDebuggableGraphic } from '../graphics/ThreeDebuggable';
 
-export interface Scene {
 
-    readonly Scene: boolean;
+export
+abstract class Scene
+extends ThreeDebuggableGraphic<three.Group> {
 
-    // TODO: use promise as return type
-    load(worldScene: three.Scene): void;
+    readonly Scene = true;
 
-    clear(worldScene: three.Scene): void;
+    abstract initialize(): Promise<boolean>;
 
-    update(dt: number): void;
-
-}
-
-export interface SceneNavigator {
-
-    readonly SceneNavigator: boolean;
-
-    display(sceneName: string): void;
-
-    close(sceneName: string): void;
+    destroy(): Promise<boolean> {
+        return Promise.resolve(true);
+    }
 
 }

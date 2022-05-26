@@ -4,25 +4,25 @@ import { View } from './graphics/View';
 import { Canvas } from './graphics/Canvas';
 import { World } from './graphics/World';
 import { ThreeDebuggableGraphic } from './graphics/ThreeDebuggable';
+import { SimpleSceneNavigator } from './scene/SceneNavigator';
+import { MainScene } from './scene/MainScene';
+import { LightSet } from './graphics/LightSet';
 
-const sphere = new class extends ThreeDebuggableGraphic<three.Mesh> {
-    constructor() {
-        super(
-            new three.Mesh(new three.SphereGeometry(10),new three.MeshBasicMaterial({ color: 0xff0000 })),
-            'Sphere'
-        )
-    }
-}
+const broacaster = {
+    start() { console.log('broacaster start'); },
+    finish() { console.log('broacaster start'); },
+};
 
 export
 class Game {
 
     protected readonly clock = new three.Clock();
-    protected readonly gui = new GUI();
+    protected readonly gui = new GUI().close();
 
     protected readonly view: View;
     protected readonly canvas: Canvas;
     protected readonly world: World;
+    protected readonly sceneNavigator: SimpleSceneNavigator;
 
     constructor(
         canvasParent = document.body,
@@ -32,7 +32,10 @@ class Game {
         this.view = new View(this.canvas);
         this.view.getNode().position.set(0, 10, 50);
         this.view.getNode().lookAt(this.world.getNode().position);
-        this.world.add(this.view, sphere);
+        this.world.add(this.view, new LightSet());
+        this.sceneNavigator = new SimpleSceneNavigator(this.world, broacaster);
+        this.sceneNavigator.addScene('main', new MainScene(this.sceneNavigator));
+        this.sceneNavigator.display('main');
 
         this.world.register(this.gui);
 
